@@ -32,13 +32,15 @@ export class MeetupParser implements EventParser {
       const html = await response.text();
       const $ = cheerio.load(html);
 
-      const title = this.extractTitle($);
+      const jsonLd = this.extractJsonLd($);
+
+      const title = this.extractTitle($, jsonLd);
       const description = this.extractDescription($);
-      const dates = this.extractDates($);
-      const location = this.extractLocation($);
-      const organizer = this.extractOrganizer($, url);
+      const dates = this.extractDates($, jsonLd);
+      const location = this.extractLocation($, jsonLd);
+      const organizer = this.extractOrganizer($, url, jsonLd);
       const price = this.extractPrice($);
-      const imageUrl = this.extractImage($);
+      const imageUrl = this.extractImage($, jsonLd);
       const tags = this.extractTags($);
 
       const event: Partial<Event> = {
@@ -74,7 +76,27 @@ export class MeetupParser implements EventParser {
     }
   }
 
-  private extractTitle($: cheerio.CheerioAPI): string {
+  private extractJsonLd($: cheerio.CheerioAPI): any {
+    try {
+      const scripts = $('script[type="application/ld+json"]');
+      for (let i = 0; i < scripts.length; i++) {
+        const scriptContent = $(scripts[i]).html();
+        if (scriptContent) {
+          const data = JSON.parse(scriptContent);
+          if (data['@type'] === 'Event' || data['@type'] === 'SocialEvent') {
+            return data;
+          }
+        }
+      }
+    } catch (error) {
+    }
+    return null;
+  }
+
+  private extractTitle($: cheerio.CheerioAPI, jsonLd?: any): string {
+    if (jsonLd?.name) {
+      return cleanText(jsonLd.name);
+    }
     const selectors = [
       'h1[data-event-title]',
       'h1.text--sectionTitle',
@@ -106,7 +128,17 @@ export class MeetupParser implements EventParser {
     return 'No description available';
   }
 
-  private extractDates($: cheerio.CheerioAPI): Event['dates'] {
+  private extractDates($: cheerio.CheerioAPI, jsonLd?: any): Event['dates'] {
+    if (jsonLd?.startDate) {
+      const dates: Event['dates'] = {
+        start: parseDate(jsonLd.startDate),
+      };
+      if (jsonLd.endDate) {
+        dates.end = parseDate(jsonLd.endDate);
+      }
+      return dates;
+    }
+
     const startSelectors = [
       'time[datetime]',
       '[data-event-start-time]',
@@ -132,7 +164,46 @@ export class MeetupParser implements EventParser {
     };
   }
 
-  private extractLocation($: cheerio.CheerioAPI): Event['location'] {
+  private extractLocation($: cheerio.CheerioAPI, jsonLd?: any): Event['location'] {
+    if (jsonLd?.location) {
+      const loc = jsonLd.location;
+      const isVirtual = jsonLd.eventAttendanceMode === 'OnlineEventAttendanceMode';
+
+      if (isVirtual) {
+        return {
+          type: 'virtual',
+          url: loc.url || undefined,
+        };
+      }
+
+      const location: Event['location'] = {
+        type: 'physical',
+      };
+
+      if (loc.name) {
+        location.venue = cleanText(loc.name);
+      }
+
+      if (loc.address) {
+        if (typeof loc.address === 'string') {
+          location.address = cleanText(loc.address);
+        } else if (loc.address.streetAddress) {
+          location.address = cleanText(loc.address.streetAddress);
+          if (loc.address.addressLocality) {
+            location.city = cleanText(loc.address.addressLocality);
+          }
+          if (loc.address.addressRegion) {
+            location.state = cleanText(loc.address.addressRegion);
+          }
+          if (loc.address.addressCountry) {
+            location.country = cleanText(loc.address.addressCountry);
+          }
+        }
+      }
+
+      return location;
+    }
+
     const venueSelectors = [
       '[data-event-venue]',
       '.venueDisplay',
@@ -165,7 +236,15 @@ export class MeetupParser implements EventParser {
     };
   }
 
-  private extractOrganizer($: cheerio.CheerioAPI, url: string): Event['organizer'] {
+  private extractOrganizer($: cheerio.CheerioAPI, url: string, jsonLd?: any): Event['organizer'] {
+    if (jsonLd?.organizer) {
+      const org = jsonLd.organizer;
+      return {
+        name: cleanText(org.name) || 'Meetup Organizer',
+        url: org.url || url.split('/events/')[0],
+      };
+    }
+
     const nameSelectors = [
       '[data-group-name]',
       '.groupLink',
@@ -215,7 +294,17 @@ export class MeetupParser implements EventParser {
     return { isFree: true };
   }
 
-  private extractImage($: cheerio.CheerioAPI): string | undefined {
+  private extractImage($: cheerio.CheerioAPI, jsonLd?: any): string | undefined {
+    if (jsonLd?.image) {
+      if (typeof jsonLd.image === 'string') {
+        return jsonLd.image;
+      } else if (Array.isArray(jsonLd.image) && jsonLd.image.length > 0) {
+        return jsonLd.image[0];
+      } else if (jsonLd.image.url) {
+        return jsonLd.image.url;
+      }
+    }
+
     const imageSelectors = [
       '[data-event-image]',
       '.event-photo img',

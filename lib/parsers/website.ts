@@ -198,13 +198,20 @@ export class WebsiteParser implements EventParser {
       }
 
       if (loc['@type'] === 'Place') {
+        const address = loc.address || {};
+        let country = address.addressCountry;
+
+        if (typeof country === 'object') {
+          country = country.name || country['@id'] || '';
+        }
+
         return {
           type: 'physical',
           venue: loc.name,
-          address: loc.address?.streetAddress,
-          city: loc.address?.addressLocality,
-          state: loc.address?.addressRegion,
-          country: loc.address?.addressCountry,
+          address: address.streetAddress,
+          city: address.addressLocality,
+          state: address.addressRegion,
+          country: typeof country === 'string' ? country : undefined,
         };
       }
 
@@ -248,8 +255,17 @@ export class WebsiteParser implements EventParser {
 
     if (jsonLd?.organizer) {
       const org = jsonLd.organizer;
-      name = org.name || org;
-      organizerUrl = org.url;
+
+      if (Array.isArray(org)) {
+        const firstOrg = org[0];
+        name = typeof firstOrg === 'object' ? (firstOrg.name || '') : cleanText(String(firstOrg));
+        organizerUrl = typeof firstOrg === 'object' ? firstOrg.url : undefined;
+      } else if (typeof org === 'object') {
+        name = org.name || '';
+        organizerUrl = org.url;
+      } else {
+        name = cleanText(String(org));
+      }
     } else {
       const organizerSelectors = [
         '[itemprop="organizer"]',
