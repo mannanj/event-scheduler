@@ -1,0 +1,35 @@
+{
+  "id": "community-hackathon",
+  "title": "Community Builders Hackathon",
+  "description": "48-hour hackathon focused on building tools for local communities. Join us in person at Innovation Lab or participate remotely. Form teams, build prototypes, and compete for prizes. All skill levels welcome!",
+  "dates": {
+    "start": "2025-12-01T10:00:00",
+    "end": "2025-12-03T18:00:00",
+    "timezone": "America/New_York"
+  },
+  "location": {
+    "type": "hybrid",
+    "venue": "Innovation Lab NYC",
+    "address": "456 Broadway",
+    "city": "New York",
+    "state": "NY",
+    "country": "USA",
+    "url": "https://discord.gg/community-hackathon"
+  },
+  "organizer": {
+    "name": "NYC Tech Community",
+    "email": "events@nyctechcommunity.org",
+    "phone": "+1-555-0123",
+    "url": "https://nyctechcommunity.org"
+  },
+  "price": {
+    "isFree": true
+  },
+  "tags": ["hackathon", "community", "civic-tech", "social-impact"],
+  "categories": ["Technology", "Community", "Hackathon"],
+  "platform": "facebook",
+  "sourceUrl": "https://facebook.com/events/community-builders-hackathon-2025",
+  "imageUrl": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d",
+  "createdAt": "2025-11-01T10:00:00Z",
+  "updatedAt": "2025-11-01T10:00:00Z"
+}

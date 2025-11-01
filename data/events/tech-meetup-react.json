@@ -1,0 +1,33 @@
+{
+  "id": "tech-meetup-react",
+  "title": "React Performance Workshop",
+  "description": "Join us for an in-depth workshop on optimizing React applications. We'll cover React 19 features, performance profiling, and best practices for building fast, responsive UIs. Perfect for intermediate to advanced React developers.",
+  "dates": {
+    "start": "2025-11-15T18:00:00",
+    "end": "2025-11-15T21:00:00",
+    "timezone": "America/Los_Angeles"
+  },
+  "location": {
+    "type": "physical",
+    "venue": "TechHub SF",
+    "address": "123 Market Street",
+    "city": "San Francisco",
+    "state": "CA",
+    "country": "USA"
+  },
+  "organizer": {
+    "name": "SF React Developers",
+    "email": "hello@sfreact.dev",
+    "url": "https://sfreact.dev"
+  },
+  "price": {
+    "isFree": true
+  },
+  "tags": ["react", "performance", "workshop", "web-development"],
+  "categories": ["Technology", "Web Development"],
+  "platform": "meetup",
+  "sourceUrl": "https://meetup.com/sf-react-developers/events/tech-meetup-react",
+  "imageUrl": "https://images.unsplash.com/photo-1633356122544-f134324a6cee",
+  "createdAt": "2025-11-01T10:00:00Z",
+  "updatedAt": "2025-11-01T10:00:00Z"
+}
