@@ -65,5 +65,6 @@ export function getSupportedPlatforms(): string[] {
 export { meetupParser } from './meetup';
 export { facebookParser } from './facebook';
 export { websiteParser } from './website';
-export { ParserError, ParseResult } from './utils';
-export { EventParser } from './types';
+export { ParserError } from './utils';
+export type { ParseResult } from './utils';
+export type { EventParser } from './types';

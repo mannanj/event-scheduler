@@ -1,13 +1,23 @@
 "use client";
 
 import { useEvents } from '@/hooks/useEvents';
+import { useEventFilters } from '@/hooks/useEventFilters';
 import EventList from '@/components/EventList';
+import SearchBar from '@/components/SearchBar';
+import FilterBar from '@/components/FilterBar';
+import SortControls from '@/components/SortControls';
 
 export default function Home() {
   const { events, loading, error } = useEvents();
-  const sortedEvents = events.sort((a, b) =>
-    new Date(a.dates.start).getTime() - new Date(b.dates.start).getTime()
-  );
+  const {
+    filters,
+    updateFilter,
+    resetFilters,
+    filteredAndSortedEvents,
+    availableCities,
+    availableCategories,
+    hasActiveFilters,
+  } = useEventFilters(events);
 
   return (
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">
@@ -21,8 +31,37 @@ export default function Home() {
           </p>
         </header>
 
-        <main>
-          <EventList events={sortedEvents} loading={loading} error={error} />
+        <main className="space-y-6">
+          <SearchBar
+            value={filters.searchQuery}
+            onChange={(value) => updateFilter('searchQuery', value)}
+            placeholder="Search events by title, description, tags, or organizer..."
+          />
+
+          <FilterBar
+            locationType={filters.locationType}
+            onLocationTypeChange={(type) => updateFilter('locationType', type)}
+            city={filters.city}
+            onCityChange={(city) => updateFilter('city', city)}
+            availableCities={availableCities}
+            category={filters.category}
+            onCategoryChange={(category) => updateFilter('category', category)}
+            availableCategories={availableCategories}
+            isFreeOnly={filters.isFreeOnly}
+            onFreeOnlyChange={(isFree) => updateFilter('isFreeOnly', isFree)}
+            dateRange={filters.dateRange}
+            onDateRangeChange={(range) => updateFilter('dateRange', range)}
+            onReset={resetFilters}
+            hasActiveFilters={hasActiveFilters}
+          />
+
+          <SortControls
+            sortBy={filters.sortBy}
+            onSortChange={(sort) => updateFilter('sortBy', sort)}
+            resultCount={filteredAndSortedEvents.length}
+          />
+
+          <EventList events={filteredAndSortedEvents} loading={loading} error={error} />
         </main>
       </div>
     </div>
